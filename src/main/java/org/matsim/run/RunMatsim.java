@@ -18,13 +18,22 @@
  * *********************************************************************** */
 package org.matsim.run;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.scoring.ScoringFunction;
+import org.matsim.core.scoring.ScoringFunctionFactory;
+
+import com.google.inject.Inject;
 
 /**
  * @author nagel
@@ -50,13 +59,36 @@ public class RunMatsim {
 		
 		// ---
 		
+		
 		Controler controler = new Controler( scenario ) ;
 		
+//		controler.addOverridingModule(new AbstractModule() {
+//			@Override public void install(){
+//				bind(ScoringFunctionFactory.class).to(MyScoringFunctionFactory.class);
+//			}
+//		}
 		// possibly modify controler here
 		
 		// ---
 		
 		controler.run();
+	}
+	
+	private static class MyScoringFunctionFactory implements ScoringFunctionFactory{
+		
+		@Inject private Config config;
+		
+		
+		
+//		@Override public void install() {
+//		bind (ScoringFunctionFactory.class).to(MyScoringFunctionFactory.class);
+//		}
+
+		@Override
+		public ScoringFunction createNewScoringFunction(Person person) {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}
 	
 }
