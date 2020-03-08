@@ -66,7 +66,7 @@ public final class RunBerlinScenario2 {
 		
 		Scenario scenario = prepareScenario( config ) ;
 		
-		PopulationUtils.sampleDown(scenario.getPopulation(), 0.1);
+//		PopulationUtils.sampleDown(scenario.getPopulation(), 0.1);
 		
 		Controler controler = prepareControler( scenario ) ;
 		
