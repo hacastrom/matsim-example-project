@@ -36,6 +36,7 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryLogging;
 import org.matsim.core.gbl.Gbl;
+import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
@@ -55,7 +56,7 @@ public final class RunBerlinScenario2 {
 		}
 		
 		if ( args.length==0 ) {
-			args = new String[] {"scenarios/berlin-v5.5-10pct/input/berlin-v5.5-10pct.config.xml"}  ;
+			args = new String[] {"scenarios/berlin-v5.5-1pct/input/berlin-v5.5-1pct.config.xml"}  ;
 		}
 
 		Config config = prepareConfig( args ) ;
@@ -64,6 +65,9 @@ public final class RunBerlinScenario2 {
 		diversitySettings.setEnableDiversityModule(true);
 		
 		Scenario scenario = prepareScenario( config ) ;
+		
+		PopulationUtils.sampleDown(scenario.getPopulation(), 0.1);
+		
 		Controler controler = prepareControler( scenario ) ;
 		
 		controler.addOverridingModule(new DiversityModule());
