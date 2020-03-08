@@ -14,7 +14,6 @@ public class RunDiversityExample {
 		String Plans =  "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/cottbus/cottbus-tutorial-2016/output/cb01/ITERS/it.100/100.plans.xml.gz";
 		
 		Config config = ConfigUtils.createConfig();
-		config.global().
 		config.plans().setInputFile(Plans);
 //		config.plans().setInputFile(null);
 		config.global().setCoordinateSystem("EPSG:31468");
@@ -24,7 +23,7 @@ public class RunDiversityExample {
 		DiversityUtils.getTestPopulation(population);
 		
 		DiversityUtils.setStatisticAttributesinPopulation(population);
-		adressingDiversity(scenario, "BYCHAIN", true);
+//		DiversityUtils.adressingDiversity(scenario, );
 		PopulationUtils.writePopulation(population, "scenarios/plansoutput.xml.gz");
 		}
 
