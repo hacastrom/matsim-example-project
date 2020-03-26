@@ -3,13 +3,17 @@ package org.matsim.analysis;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.log4j.Logger;
 import org.matsim.analysis.DiversityConfigGroup.DiversityEvaluationMethod;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
@@ -18,10 +22,12 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.Route;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.routes.NetworkRoute;
+import org.matsim.core.population.routes.RouteUtils;
 
 public class DiversityUtils {
-				
 	
+	private static final Logger log = Logger.getLogger( DiversityUtils.class );
+				
 	public static void getTestPopulation (Population population) {
 		
 		Id<Person> id = Id.createPersonId("hugo-Test");
@@ -106,7 +112,6 @@ public class DiversityUtils {
 				population.getPersons().get(ID).getAttributes().putAttribute("ScoreSD", plansStandardDeviation);
 			}
 			
-			System.out.println("ID = "+ ID + " sd = " + plansStandardDeviation + " mw = " + plansScoreAverage);
 		}	
 	}
 	
@@ -115,25 +120,48 @@ public class DiversityUtils {
 		return(mean);
 	}
 	
-	public static double getLegSimilarity (Leg leg1, Leg leg2) {
-		double legSimilarity = 0;
-		
-		if (leg1.getMode() != leg2.getMode())return legSimilarity;
+	public static double calculateSimilarityforDiversity(List<Leg> legs1, List<Leg> legs2, Network network, 
+			double sameModeReward, double sameRouteReward ) {
+		double simil = 0. ;
+		Iterator<Leg> it1 = legs1.iterator();
+		Iterator<Leg> it2 = legs2.iterator();
+		double totalLegDistance = 0;
+		for (Leg leg: legs2) {
+			totalLegDistance = leg.getRoute().getDistance() + totalLegDistance;
+		}
+		for ( ; it1.hasNext() && it2.hasNext(); ) {
+			Leg leg1 = it1.next() ;
+			Leg leg2 = it2.next() ;			
+			Double distanceFactor = leg2.getRoute().getDistance()/totalLegDistance;
+		if ( leg1.getMode().equals( leg2.getMode() ) ) {
+				simil += sameModeReward * distanceFactor;
+			} else {
+				continue ;
+			}
 		Route route1 = leg1.getRoute() ;
-		Route route2 = leg2.getRoute() ;
-		NetworkRoute nr1, nr2 ;
-		
-		if (route1 instanceof NetworkRoute) {
-			nr1 = (NetworkRoute) route1;
-		}else return 1;
-		
-		if (route1 instanceof NetworkRoute) {
-			nr2 = (NetworkRoute) route2;
-		}else return 1;
-		
-		return legSimilarity;
+			Route route2 = leg2.getRoute() ;
+			// currently only for network routes:
+			NetworkRoute nr1, nr2 ;
+			if ( route1 instanceof NetworkRoute ) {
+				nr1 = (NetworkRoute) route1 ;
+			} else {
+				simil += sameModeReward * distanceFactor;
+				// ("no route" is interpreted as "same route".  One reason is that otherwise plans
+				// with routes always receive higher penalties than plans without routes in the diversity
+				// increasing plans remover, which clearly is not what one wants. kai, jul'18)
+				continue ; // next leg
+			}
+			if ( route2 instanceof NetworkRoute ) {
+				nr2 = (NetworkRoute) route2 ;
+			} else {
+				simil += sameModeReward * distanceFactor;
+				continue ; // next leg
+			}
+			simil += distanceFactor * sameRouteReward * ( RouteUtils.calculateCoverage(nr1, nr2, network) + RouteUtils.calculateCoverage(nr2, nr1, network) ) / 2 ;
+		}
+		return simil;
 	}
-	
+
 	public static List<String> getModeChain (Plan plan){
 		List <String> modeChain = new ArrayList<String>();
 		List<Leg> legs = PopulationUtils.getLegs(plan);
@@ -156,18 +184,15 @@ public class DiversityUtils {
 		return(modes);
 	}
 	
-	
 	public static boolean evaluateDiversity(Person person, Scenario scenario, DiversityConfigGroup diversityCfg ) {
 		boolean diversity = false;
 		DiversityEvaluationMethod diversityEvaluationMethod = diversityCfg.getDiversityEvaluationMethod(); 
 		int numberofPlans = person.getPlans().size();
 		if (numberofPlans == 1) {
-			System.out.println("Just one plan for person: " + person.getId().toString());
 			return diversity;	
 		}
 		Plan referencePlan = person.getSelectedPlan();
 		if (referencePlan == null) {
-			System.out.println("Person " + person.getId().toString() + "has not a selected plan");
 			referencePlan = person.getPlans().get(0);
 		}
 			if (diversityEvaluationMethod.equals(DiversityEvaluationMethod.BYCHAIN)) {
@@ -189,8 +214,9 @@ public class DiversityUtils {
 				}
 			}
 			if (diversityEvaluationMethod.equals(DiversityEvaluationMethod.BYROUTES)) {
+				Typebysimilarity(person, scenario, diversityCfg);
 				for (Plan plan: person.getPlans()) {
-					if (getModes(referencePlan).equals(getModes(plan))) {
+					if (referencePlan.getType().equals(plan.getType())) {
 					} else {
 						diversity = true;
 					}
@@ -210,7 +236,7 @@ public class DiversityUtils {
 		int proccessedPersons = 0;
 		population.getAttributes().putAttribute("diverse", false);
 		Map<Id<Person>, ? extends Person> persons = population.getPersons(); 
-		int rang = persons.size()/100 ;
+		int rang = persons.size()/10 ;
 		if (rang == 0) rang = 1 ;
 		
 		for (Id<Person> ID : persons.keySet()) {
@@ -221,12 +247,12 @@ public class DiversityUtils {
 			}
 			proccessedPersons++;
 			if(proccessedPersons % rang == 0) {
-				System.out.println(proccessedPersons + " have been processed");
+				log.info(proccessedPersons + " have been processed");
 			}
 		}
 		
 		aux = (aux/(population.getPersons().size()))*100;
-		System.out.println("the " + aux + "% is diverse");
+		log.info("the " + aux + "% is diverse");
 	}
 	
 	public static void createDiverseSubpopulation (Population population) {
@@ -250,7 +276,6 @@ public class DiversityUtils {
 	
 		for (int nestReference = 0;nestReference < numberofNests; nestReference++) {
 			if (allNested(typingInfo)) {
-				System.out.println("the number of nests are less for the person: " + person.getId().toString() + " than " + numberofNests);
 				break;
 			}
 			int nestPosition = firstnotnested(typingInfo);
@@ -349,4 +374,80 @@ public class DiversityUtils {
 				
 	}
 
+	public static void Typebysimilarity (Person person, Scenario scenario, DiversityConfigGroup diversityCfg) {
+
+		Plan referencePlan = person.getSelectedPlan();
+		if (referencePlan == null) {
+			referencePlan = person.getPlans().get(0);
+		}
+		int counter = 0;
+		int type = 1;
+		for (Plan plan: person.getPlans()) {
+			if (plan.equals(referencePlan)) {
+				plan.setType("T0");
+			} 
+			else {
+				double similarity = calculateSimilarityforDiversity(PopulationUtils.getLegs(referencePlan),
+					PopulationUtils.getLegs(plan),
+					scenario.getNetwork(),
+					0,
+					1);
+				similarity = similarity/((PopulationUtils.getLegs(referencePlan).size()+PopulationUtils.getLegs(referencePlan).size())/2);
+				if (similarity > diversityCfg.getAllowedSimilarity()) {
+					plan.setType("T0");
+					continue;
+				}
+				if (counter == 0) {
+					plan.setType("T"+type);
+					type++;
+					continue;
+				}
+				else {
+					int iterator = 0;
+					while(iterator <= counter) {
+						similarity = calculateSimilarityforDiversity(PopulationUtils.getLegs(person.getPlans().get(iterator)),
+								PopulationUtils.getLegs(plan),
+								scenario.getNetwork(),
+								0,
+								1);			
+						similarity = similarity/((PopulationUtils.getLegs(referencePlan).size()+PopulationUtils.getLegs(referencePlan).size())/2);
+						if (similarity > diversityCfg.getAllowedSimilarity()) {
+						plan.setType(person.getPlans().get(iterator).getType());
+						break;
+						}
+						if (iterator == counter) {
+							plan.setType("T"+type);
+							type++;
+						}
+						iterator++;
+					}
+				}	
+		}
+			counter++;
+	}
+	}
+
+	public static double GetDiversePortionofPopulation (Population population) {
+
+		Map<Id<Person>, ? extends Person> persons = population.getPersons();
+		double diversepop = 0;
+		double popsize = population.getPersons().size();
+		for (Id<Person> id: persons.keySet()) {
+			boolean Dpop = (boolean) population.getPersons().get(id).getAttributes().getAttribute("diverse");
+			if (Dpop == true) {
+				log.info(diversepop);
+				diversepop++;
+			}
+		}
+		log.info("diverse persons : " + diversepop + " total persons " + popsize);
+		double proportion = 0;	
+		if (popsize == 0.0) {
+			log.warn("no persons in population");
+			return proportion;
+		} else {
+		proportion = diversepop/popsize;
+		log.info("the precentage of persons with diverse plans is = " + proportion*100 + "%");
+		return proportion;
+		}	
+	}
 }

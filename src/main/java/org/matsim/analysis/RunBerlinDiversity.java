@@ -24,6 +24,7 @@ import static org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorith
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
+import org.matsim.analysis.DiversityConfigGroup.DiversityEvaluationMethod;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.config.Config;
@@ -35,19 +36,17 @@ import org.matsim.core.config.groups.VspExperimentalConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryLogging;
+import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 
-/**
-* @author ikaddoura
-*/
 
-public final class RunBerlinScenario2 {
+public final class RunBerlinDiversity {
 
-	private static final Logger log = Logger.getLogger(RunBerlinScenario2.class );
+	private static final Logger log = Logger.getLogger(RunBerlinDiversity.class );
 
 	public static void main(String[] args) {
 		
@@ -60,17 +59,25 @@ public final class RunBerlinScenario2 {
 		}
 
 		Config config = prepareConfig( args ) ;
+		config.plans().setInputFile("D:\\JAR\\downsampled.xml.gz");
+		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
+		config.controler().setLastIteration(50);
 		
 		DiversityConfigGroup diversitySettings = ConfigUtils.addOrGetModule(config, DiversityConfigGroup.class);
 		diversitySettings.setEnableDiversityModule(true);
+		diversitySettings.setDiversityEvaluationMethod(DiversityEvaluationMethod.BYROUTES);
+		diversitySettings.setAllowedSimilarity(0);
 		
 		Scenario scenario = prepareScenario( config ) ;
 		
-//		PopulationUtils.sampleDown(scenario.getPopulation(), 0.1);
+		DiversityConfigGroup diversityCfg = (DiversityConfigGroup) scenario.getConfig().getModules().get(DiversityConfigGroup.GROUP_NAME);
+//		DiversityUtils.adressingDiversity(scenario, diversityCfg);
+		PopulationUtils.sampleDown(scenario.getPopulation(), 0.01);
 		
 		Controler controler = prepareControler( scenario ) ;
 		
 		controler.addOverridingModule(new DiversityModule());
+		DiversityAnalysis.Analyse(scenario);
 		
 		controler.run() ;
 

@@ -18,12 +18,14 @@ public class RunDiversityExample {
 //		config.plans().setInputFile(null);
 		config.global().setCoordinateSystem("EPSG:31468");
 		
+		DiversityConfigGroup diversitySettings = ConfigUtils.addOrGetModule(config, DiversityConfigGroup.class);
+		diversitySettings.setEnableDiversityModule(true);
+		
 		Scenario scenario = ScenarioUtils.loadScenario(config);
 		Population population = scenario.getPopulation();
 		DiversityUtils.getTestPopulation(population);
 		
 		DiversityUtils.setStatisticAttributesinPopulation(population);
-//		DiversityUtils.adressingDiversity(scenario, );
 		PopulationUtils.writePopulation(population, "scenarios/plansoutput.xml.gz");
 		}
 

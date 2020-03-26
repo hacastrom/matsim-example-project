@@ -12,11 +12,12 @@ public final class DiversityConfigGroup extends ReflectiveConfigGroup {
 		super(GROUP_NAME);
 	}
 	
-	private boolean enableDiversityModule = true;
+	private boolean enableDiversityModule = false;
 	private final String diversityCriteriaName = "DiversityEvaluationMethod";
 	private boolean exclusionCriteria = true;
 	private int numberofnests = 2;
 	private DiversityEvaluationMethod diversityEvaluationMethod = DiversityEvaluationMethod.BYCHAIN; 
+	private double allowedSimilarity = 0.5;
 	
 	public boolean getEnableDiversityModule() {
 		return enableDiversityModule;
@@ -52,6 +53,14 @@ public final class DiversityConfigGroup extends ReflectiveConfigGroup {
 
 	public void setDiversityEvaluationMethod(DiversityEvaluationMethod diversityEvaluationMethod) {
 		this.diversityEvaluationMethod = diversityEvaluationMethod;
+	}
+
+	public double getAllowedSimilarity() {
+		return allowedSimilarity;
+	}
+
+	public void setAllowedSimilarity(double allowedSimilarity) {
+		this.allowedSimilarity = allowedSimilarity;
 	}
 
 	public enum DiversityEvaluationMethod {BYMODES,BYCHAIN,BYROUTES}
