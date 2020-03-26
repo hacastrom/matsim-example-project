@@ -1,4 +1,4 @@
-package org.matsim.analysis;
+package org.matsim.prepare;
 
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.population.PopulationUtils;

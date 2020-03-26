@@ -1,4 +1,4 @@
-package org.matsim.analysis;
+package org.matsim.diversity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.matsim.analysis.DiversityConfigGroup.DiversityEvaluationMethod;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -186,7 +185,7 @@ public class DiversityUtils {
 	
 	public static boolean evaluateDiversity(Person person, Scenario scenario, DiversityConfigGroup diversityCfg ) {
 		boolean diversity = false;
-		DiversityEvaluationMethod diversityEvaluationMethod = diversityCfg.getDiversityEvaluationMethod(); 
+		DiversityConfigGroup.DiversityEvaluationMethod diversityEvaluationMethod = diversityCfg.getDiversityEvaluationMethod(); 
 		int numberofPlans = person.getPlans().size();
 		if (numberofPlans == 1) {
 			return diversity;	
@@ -195,7 +194,7 @@ public class DiversityUtils {
 		if (referencePlan == null) {
 			referencePlan = person.getPlans().get(0);
 		}
-			if (diversityEvaluationMethod.equals(DiversityEvaluationMethod.BYCHAIN)) {
+			if (diversityEvaluationMethod.equals(DiversityConfigGroup.DiversityEvaluationMethod.BYCHAIN)) {
 				for (Plan plan: person.getPlans()) {
 					plan.setType(getModeChain(plan).toString());
 					if (getModeChain(referencePlan).equals(getModeChain(plan))) {
@@ -204,7 +203,7 @@ public class DiversityUtils {
 					}
 				}
 			}
-			if (diversityEvaluationMethod.equals(DiversityEvaluationMethod.BYMODES)) {
+			if (diversityEvaluationMethod.equals(DiversityConfigGroup.DiversityEvaluationMethod.BYMODES)) {
 				for (Plan plan: person.getPlans()) {
 					plan.setType(getModes(plan).toString());
 					if (getModes(referencePlan).equals(getModes(plan))) {
@@ -213,7 +212,7 @@ public class DiversityUtils {
 					}
 				}
 			}
-			if (diversityEvaluationMethod.equals(DiversityEvaluationMethod.BYROUTES)) {
+			if (diversityEvaluationMethod.equals(DiversityConfigGroup.DiversityEvaluationMethod.BYROUTES)) {
 				Typebysimilarity(person, scenario, diversityCfg);
 				for (Plan plan: person.getPlans()) {
 					if (referencePlan.getType().equals(plan.getType())) {

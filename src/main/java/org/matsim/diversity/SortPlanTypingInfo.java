@@ -1,4 +1,4 @@
-package org.matsim.analysis;
+package org.matsim.diversity;
 
 import org.matsim.api.core.v01.population.Person;
 

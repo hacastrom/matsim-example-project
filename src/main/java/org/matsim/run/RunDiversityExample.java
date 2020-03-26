@@ -1,4 +1,4 @@
-package org.matsim.analysis;
+package org.matsim.run;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.population.Population;
@@ -6,6 +6,8 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.diversity.DiversityConfigGroup;
+import org.matsim.diversity.DiversityUtils;
 
 public class RunDiversityExample {
 	

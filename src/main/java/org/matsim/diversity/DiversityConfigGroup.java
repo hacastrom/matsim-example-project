@@ -1,4 +1,4 @@
-package org.matsim.analysis;
+package org.matsim.diversity;
 
 import org.matsim.core.config.ReflectiveConfigGroup;
 

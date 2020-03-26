@@ -17,14 +17,14 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.analysis;
+package org.matsim.run;
 
 import static org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType.FastAStarLandmarks;
 
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
-import org.matsim.analysis.DiversityConfigGroup.DiversityEvaluationMethod;
+import org.matsim.analysis.DiversityAnalysis;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.config.Config;
@@ -40,6 +40,9 @@ import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.diversity.DiversityConfigGroup;
+import org.matsim.diversity.DiversityModule;
+import org.matsim.diversity.DiversityConfigGroup.DiversityEvaluationMethod;
 
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
 
