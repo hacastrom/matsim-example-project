@@ -11,6 +11,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
@@ -29,6 +30,7 @@ public class DiversityAnalysis {
 		Analyse(pop);
 		ListPersonsbyAttribute(pop, "diverse", false);
 		ListPersonsbyAttribute(pop, "diverse", true);
+		WritetidyCSV(pop);
 	}
 	
 	public static void ListPersonsbyAttribute(Population pop, String attribute, Object Value) {
@@ -77,7 +79,7 @@ public class DiversityAnalysis {
 	     try {
 		 String mycontent = "Analysis";
 	        //Specify the file name and path here
-		 File file = new File("Analysis.txt");
+		 File file = new File("Analysis.csv");
 
 		  if (!file.exists()) {
 		     file.createNewFile();
@@ -102,5 +104,54 @@ public class DiversityAnalysis {
 		       log.warn("Error in closing the BufferedWriter"+ex);
 		    }
 		}
+	}
+	
+	@SuppressWarnings("null")
+	public static void WritetidyCSV (Population pop) {
+		 BufferedWriter bw = null;
+	     try {
+		 String mycontent = "Analysis";
+	        //Specify the file name and path here
+		 File file = new File("Personinfo.txt");
+
+		  if (!file.exists()) {
+		     file.createNewFile();
+		  }
+		  FileWriter fw = new FileWriter(file);
+		  bw = new BufferedWriter(fw);
+		  Set<Id<Person>> persons = pop.getPersons().keySet();
+		  bw.write("ID;");
+		  bw.write("X;Y;");
+		  bw.write("Type;");
+		  bw.write("Diverse");
+		  bw.newLine();
+		  for (Id<Person> id : persons){
+			  Person person = pop.getPersons().get(id);
+				  bw.write(id.toString()+";");
+				  bw.write(GetCoordinatesPerson(person)+";");
+				  bw.write(PopulationUtils.getFirstActivity(person.getSelectedPlan()).getType()+";");
+				  bw.write(person.getAttributes().getAttribute("diverse").toString());
+				  bw.newLine();
+			  }
+	     } catch (IOException ioe) {
+		   ioe.printStackTrace();
+		}
+		finally
+		{ 
+		   try{
+		      if(bw!=null)
+			 bw.close();
+		   }catch(Exception ex){
+		       log.warn("Error in closing the BufferedWriter"+ex);
+		    }
+		}
+	}
+	
+	public static String GetCoordinatesPerson(Person person) {
+		String coordinates;
+		double x = 	PopulationUtils.getFirstActivity(person.getSelectedPlan()).getCoord().getX();
+		double y = 	PopulationUtils.getFirstActivity(person.getSelectedPlan()).getCoord().getY();
+		coordinates = x + ";" + y;
+		return coordinates;
 	}
 }

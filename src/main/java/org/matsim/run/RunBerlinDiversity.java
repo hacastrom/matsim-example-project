@@ -22,9 +22,11 @@ package org.matsim.run;
 import static org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType.FastAStarLandmarks;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.matsim.analysis.DiversityAnalysis;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.config.Config;
@@ -42,6 +44,7 @@ import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.diversity.DiversityConfigGroup;
 import org.matsim.diversity.DiversityModule;
+import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.diversity.DiversityConfigGroup.DiversityEvaluationMethod;
 
 import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
@@ -76,6 +79,7 @@ public final class RunBerlinDiversity {
 		DiversityConfigGroup diversityCfg = (DiversityConfigGroup) scenario.getConfig().getModules().get(DiversityConfigGroup.GROUP_NAME);
 //		DiversityUtils.adressingDiversity(scenario, diversityCfg);
 		PopulationUtils.sampleDown(scenario.getPopulation(), 0.01);
+		
 		
 		Controler controler = prepareControler( scenario ) ;
 		
